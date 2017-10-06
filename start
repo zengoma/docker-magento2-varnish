@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+mkdir -p /etc/sysconfig;
+
+echo 'NFILES=131072 \
+START=yes \
+MEMLOCK=82000 \
+VARNISH_LISTEN_PORT="${VARNISH_PORT}" \
+DAEMON_OPTS="-a :"${VARNISH_PORT}" \
+   -T localhost:6082 \
+   -f /etc/varnish/default.vcl \
+   -S /etc/varnish/secret \
+   -s malloc,256m"' > /etc/sysconfig/varnish;
+
+   sed -i s/\${VARNISH_BACKEND_HOST}/${VARNISH_BACKEND_HOST}/ /etc/varnish/default.vcl
+   sed -i s/\${VARNISH_BACKEND}/${VARNISH_BACKEND}/ /etc/varnish/default.vcl
+
+   mkdir -p /var/lib/varnish/magento2 && chown nobody /var/lib/varnish/magento2
+   varnishd -f /etc/varnish/default.vcl
+
+   sleep 1
+
+   varnishlog
