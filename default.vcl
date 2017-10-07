@@ -14,6 +14,14 @@ acl purge {
 }
 
 sub vcl_recv {
+  # Capture Real IP
+  if (req.restarts == 0) {
+      if (req.http.X-Forwarded-For) {
+         set req.http.X-Forwarded-For = req.http.X-Forwarded-For + ", " + client.ip;
+     } else {
+      set req.http.X-Forwarded-For = client.ip;
+     }
+  }
     if (req.method == "PURGE") {
         if (client.ip !~ purge) {
             return (synth(405, "Method not allowed"));
